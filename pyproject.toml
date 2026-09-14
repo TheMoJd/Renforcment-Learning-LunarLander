@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eagle1"
+version = "0.1.0"
+description = "Pilote automatique d'alunissage pour le module Eagle-1 (RL sur LunarLander-v3)"
+requires-python = ">=3.11"
+# Les dependances sont declarees dans requirements.txt / requirements.lock.txt
+# pour rester lisibles par un evaluateur qui ne connait pas pyproject.
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,31 @@
+# --- Fichiers de travail interne (hors livrable) -------------------------
+# Instructions internes pour l'assistant de code.
+CLAUDE.md
+# Enonce et brief OpenClassrooms : support de cours, pas un livrable.
+enonce.md
+*.pdf
+
+# --- Environnement Python ------------------------------------------------
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# --- Artefacts d'entrainement -------------------------------------------
+# Logs TensorBoard : volumineux et regenerables a partir des scripts.
+runs/
+# On ne versionne que best_model.zip, pas les checkpoints intermediaires.
+models/*/final.zip
+models/*/evaluations.npz
+# Base SQLite des parties jouees : etat d'execution, pas du code.
+data/*.db
+
+# --- Notebook ------------------------------------------------------------
+.ipynb_checkpoints/
+
+# --- OS / IDE ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

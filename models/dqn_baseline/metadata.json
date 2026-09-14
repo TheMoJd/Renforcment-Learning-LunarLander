@@ -1,0 +1,9 @@
+{
+  "run_name": "dqn_baseline",
+  "algo": "dqn",
+  "preset": "baseline",
+  "hyperparams": {},
+  "timesteps": 100000,
+  "train_seed": 42,
+  "duration_seconds": 210.0
+}

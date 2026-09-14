@@ -1,9 +1,11 @@
 # --- Fichiers de travail interne (hors livrable) -------------------------
 # Instructions internes pour l'assistant de code.
 CLAUDE.md
-# Enonce et brief OpenClassrooms : support de cours, pas un livrable.
+# Enonce, brief et supports de cours OpenClassrooms : pas des livrables.
 enonce.md
 *.pdf
+*.docx
+Fiche de cours/
 
 # --- Environnement Python ------------------------------------------------
 .venv/

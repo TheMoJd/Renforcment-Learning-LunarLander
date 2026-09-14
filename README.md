@@ -109,21 +109,65 @@ pytest
 <!-- RESULTATS -->
 ### Étape 1 — Référence de départ
 
-Protocole identique pour les trois lignes : `evaluate_policy`, 50 épisodes,
-seed d'évaluation 1000 (différente de l'entraînement), politique déterministe.
+Protocole : `evaluate_policy`, politique déterministe, seed d'évaluation 1000
+(différente de la seed d'entraînement 42, afin de mesurer la généralisation).
 
-| Politique | Récompense moyenne | Écart-type | Épisodes ≥ 200 |
+| Politique | Moyenne | Écart-type | Épisodes ≥ 200 |
 |---|---:|---:|---:|
-| Aléatoire (plancher) | −210,6 | 104,3 | 0 % |
-| DQN, hyperparamètres par défaut | **+90,0** | 168,5 | 38 % |
-| *Objectif* | *≥ 200* | *faible* | — |
-
-**Lecture.** L'agent a bel et bien appris : +300 points par rapport à une politique
-aléatoire, et il réussit déjà 38 % de ses atterrissages. Mais il est **instable** —
-un écart-type de 168,5 pour une moyenne de 90 signifie que les épisodes oscillent
-entre le crash (−281) et l'atterrissage propre (+263). C'est précisément ce que
-l'étape suivante doit corriger : le sujet exige une moyenne *stable*, pas une moyenne
-obtenue en compensant des crashes par de bons épisodes.
+| Aléatoire (plancher, 50 ép.) | −210,6 | 104,3 | 0 % |
+| **DQN, hyperparamètres par défaut** (100 ép.) | **+72,6** | **173,3** | 34 % |
+| *Objectif* | *≥ 200* | *faible* | *≈ 89 %* |
 
 Entraînement : 100 000 pas, 210 s sur CPU.
 
+#### Distribution des récompenses
+
+```
+  [   -281 ,    -100]  ##############################   28 épisodes  (crashes)
+  [   -100 ,      36]  ########                          8
+  [     36 ,      82]                                    0   <- la moyenne tombe ici
+  [     82 ,     172]  ################                 16
+  [    172 ,     263]  ##################################################  48  (atterrissages)
+```
+
+| Statistique | Valeur | Lecture |
+|---|---:|---|
+| Moyenne | 72,6 | |
+| Médiane | 165,2 | 93 points au-dessus de la moyenne : distribution asymétrique |
+| Écart-type | 173,3 | dispersion des épisodes — l'agent est **irrégulier** |
+| Erreur-type | 17,3 | incertitude sur la moyenne elle-même |
+| IC 95 % | [38,7 ; 106,6] | |
+| Q1 / Q3 | −113,1 / 213,1 | la moitié centrale va du crash à la réussite |
+
+**Analyse.** L'agent a nettement appris : +283 points sur une politique aléatoire, et
+34 % d'atterrissages réussis. Mais sa distribution est **bimodale** — il ne produit
+presque jamais de résultat moyen, il réussit franchement ou il s'écrase. La tranche
+qui contient la moyenne (36 à 82) est vide : aucun épisode ne ressemble à la moyenne.
+
+**Conséquence pour l'étape suivante.** En conservant les niveaux de performance actuels
+(226,2 en cas de réussite, −6,5 en cas d'échec), le taux de réussite nécessaire pour
+atteindre une moyenne de 200 se calcule directement :
+
+```
+p × 226,2 + (1 − p) × (−6,5) = 200   →   p = 89 %
+```
+
+L'objectif de l'optimisation n'est donc pas « gagner 127 points de moyenne » mais
+**faire passer le taux de réussite de 34 % à 89 %**, c'est-à-dire supprimer les crashes.
+
+#### Note méthodologique : le bruit d'évaluation
+
+Le même modèle, évalué sur 30 épisodes avec quatre seeds différentes, donne 117,7 /
+51,0 / 61,3 / 32,5 — soit 85 points d'écart. Avec un écart-type de 173, l'incertitude
+sur la moyenne vaut 173/√n : environ 32 points sur 30 épisodes, 17 sur 100.
+
+C'est pourquoi l'évaluation finale se fait sur 100 épisodes, et pourquoi un écart de
+moins de ~35 points entre deux configurations d'hyperparamètres ne peut pas être
+considéré comme significatif.
+
+Reproduire ces chiffres :
+
+```bash
+python -m eagle1.evaluate --run dqn_baseline --episodes 100
+python -m eagle1.analysis --run dqn_baseline --episodes 100
+```

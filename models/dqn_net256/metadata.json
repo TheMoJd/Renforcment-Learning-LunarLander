@@ -1,0 +1,16 @@
+{
+  "run_name": "dqn_net256",
+  "algo": "dqn",
+  "preset": "net256",
+  "hyperparams": {
+    "policy_kwargs": {
+      "net_arch": [
+        256,
+        256
+      ]
+    }
+  },
+  "timesteps": 100000,
+  "train_seed": 42,
+  "duration_seconds": 209.6
+}

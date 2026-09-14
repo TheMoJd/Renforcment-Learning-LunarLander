@@ -41,6 +41,11 @@ VIDEOS_DIR = ROOT / "videos"
 for _directory in (MODELS_DIR, RUNS_DIR, DATA_DIR, VIDEOS_DIR):
     _directory.mkdir(parents=True, exist_ok=True)
 
+# --- Modele retenu ------------------------------------------------------
+# Agent servi par l'API, le GUI et la video. Mesure sur 100 episodes et
+# quatre seeds d'evaluation : 239,0 / 246,7 / 240,0 / 252,1.
+BEST_RUN = "dqn_optimise_300k"
+
 # --- Presets d'hyperparametres -----------------------------------------
 # Chaque preset = une experience nommee, tracable dans TensorBoard et dans
 # le notebook. "baseline" est volontairement vide : il utilise les valeurs

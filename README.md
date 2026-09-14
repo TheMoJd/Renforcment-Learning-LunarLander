@@ -171,3 +171,76 @@ Reproduire ces chiffres :
 python -m eagle1.evaluate --run dqn_baseline --episodes 100
 python -m eagle1.analysis --run dqn_baseline --episodes 100
 ```
+
+### Étape 2 — Optimisation des hyperparamètres
+
+Protocole imposé : une seule variable modifiée à la fois par rapport au baseline.
+Chaque configuration est entraînée sur 100 000 pas puis évaluée sur 100 épisodes.
+
+| Configuration | Moyenne | Écart-type | ≥ 200 | Crashes |
+|---|---:|---:|---:|---:|
+| **`optimise` — 300 000 pas** | **239,0** | **78,0** | **87 %** | 2 % |
+| `optimise` — 100 000 pas | 166,8 | 63,7 | 40 % | 0 % |
+| PPO par défaut — 300 000 pas | 86,5 | 145,5 | 38 % | 12 % |
+| `baseline` (défauts SB3) | 72,6 | 173,3 | 34 % | 28 % |
+| `exploration_longue` | 62,3 | 140,1 | 14 % | 15 % |
+| `buffer_court` | 35,3 | 153,4 | 11 % | 20 % |
+| `lr_haut` | −7,9 | 164,4 | 17 % | 48 % |
+| `lot_128` | −75,7 | 160,7 | 0 % | 39 % |
+| `net256` | −79,1 | 145,9 | 4 % | 54 % |
+| `cible_rapide` | −89,5 | 25,9 | 0 % | 36 % |
+
+#### Résultat principal : les hyperparamètres interagissent
+
+**Les six modifications isolées dégradent toutes l'agent.** Pourtant leur combinaison
+le fait passer de 72,6 à 166,8, puis à 239,0 avec un budget d'entraînement triplé.
+
+Exemple le plus net : rafraîchir le réseau cible tous les 250 pas au lieu de 10 000
+est la pire modification isolée (−89,5), parce que l'agent poursuit alors une cible
+qui bouge sans cesse. Combinée à un `batch_size` de 128 — qui réduit le bruit des
+gradients — elle devient bénéfique.
+
+Cela met en évidence la limite du protocole « un paramètre à la fois » : il n'explore
+que les axes autour du point de départ et ne peut pas atteindre un optimum situé en
+diagonale. Le protocole reste utile pour *isoler* l'effet de chaque variable, mais il
+n'est pas une méthode d'optimisation.
+
+#### Un écart-type faible n'est pas un objectif en soi
+
+`cible_rapide` affiche le plus faible écart-type de toute la campagne (25,9). C'est
+pourtant le pire agent : sa durée moyenne d'épisode est de 1000 pas, soit exactement
+la limite de troncature. **Il a appris à rester en vol stationnaire sans jamais se
+poser** — parfaitement régulier à ne rien faire. La stabilité ne vaut que couplée à
+une moyenne élevée.
+
+#### DQN vs PPO
+
+À budget égal (300 000 pas), DQN optimisé atteint 239,0 quand PPO par défaut plafonne
+à 86,5. Le choix de DQN, motivé par l'espace d'actions discret, est donc confirmé
+empiriquement — et non pas seulement supposé. PPO n'a pas bénéficié du même effort
+d'optimisation, ce que cette comparaison ne préjuge pas.
+
+#### Validation finale
+
+Le seuil des 200 est franchi. Pour écarter l'hypothèse d'une seed favorable, le modèle
+retenu a été réévalué sur 100 épisodes avec quatre seeds d'évaluation distinctes :
+
+| Seed | Moyenne | Écart-type | IC 95 % | ≥ 200 |
+|---:|---:|---:|---|---:|
+| 1000 | 239,0 | 78,0 | [223,8 ; 254,3] | 87 % |
+| 2000 | 246,7 | 60,7 | [234,8 ; 258,6] | 86 % |
+| 3000 | 240,0 | 85,7 | [223,2 ; 256,8] | 89 % |
+| 4000 | 252,1 | 42,4 | [243,7 ; 260,4] | 90 % |
+
+**Moyenne des quatre campagnes : 244,5 ; plus faible campagne : 239,0.** Toutes les
+bornes inférieures d'intervalle de confiance dépassent largement 200.
+
+Progression d'ensemble : les crashes passent de 28 % à 2 %, l'écart-type de 173,3 à
+78,0, et la durée moyenne d'un épisode de 625 à 328 pas — l'agent se pose désormais
+deux fois plus vite, ce qui réduit d'autant la consommation de carburant.
+
+```bash
+python -m eagle1.train --algo dqn --preset optimise --timesteps 300000 --run-name dqn_optimise_300k
+python -m eagle1.evaluate --run dqn_optimise_300k --episodes 100
+python -m eagle1.experiments --tableau
+```

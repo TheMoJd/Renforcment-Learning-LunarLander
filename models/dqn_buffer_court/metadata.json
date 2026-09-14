@@ -1,0 +1,11 @@
+{
+  "run_name": "dqn_buffer_court",
+  "algo": "dqn",
+  "preset": "buffer_court",
+  "hyperparams": {
+    "buffer_size": 50000
+  },
+  "timesteps": 100000,
+  "train_seed": 42,
+  "duration_seconds": 185.3
+}

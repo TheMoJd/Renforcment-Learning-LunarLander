@@ -1,0 +1,9 @@
+{
+  "run_name": "ppo_defaut_300k",
+  "algo": "ppo",
+  "preset": "ppo_defaut",
+  "hyperparams": {},
+  "timesteps": 300000,
+  "train_seed": 42,
+  "duration_seconds": 564.0
+}

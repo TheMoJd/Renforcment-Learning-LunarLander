@@ -17,9 +17,16 @@ __pycache__/
 # --- Artefacts d'entrainement -------------------------------------------
 # Logs TensorBoard : volumineux et regenerables a partir des scripts.
 runs/
-# On ne versionne que best_model.zip, pas les checkpoints intermediaires.
+# On ne versionne pas les checkpoints intermediaires.
 models/*/final.zip
 models/*/evaluations.npz
+# Ni les poids des experiences perdantes : leurs resultats chiffres sont
+# conserves dans metadata.json et eval_best_model_100ep.json, ce qui suffit
+# a documenter la demarche. Seuls trois modeles ont une utilite propre.
+models/*/best_model.zip
+!models/dqn_baseline/best_model.zip
+!models/dqn_optimise_300k/best_model.zip
+!models/ppo_defaut_300k/best_model.zip
 # Base SQLite des parties jouees : etat d'execution, pas du code.
 data/*.db
 

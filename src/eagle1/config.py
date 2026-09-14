@@ -47,5 +47,56 @@ for _directory in (MODELS_DIR, RUNS_DIR, DATA_DIR, VIDEOS_DIR):
 # par defaut de Stable-Baselines3, ce qui est le point de depart demande
 # a l'etape 1.
 PRESETS: dict[str, dict] = {
+    # --- Point de depart ------------------------------------------------
+    # Vide = valeurs par defaut de Stable-Baselines3 :
+    #   learning_rate 1e-4, buffer_size 1e6, batch_size 32, net_arch [64,64],
+    #   target_update_interval 10000, exploration_fraction 0.1
+    # Mesure : 72,6 +/- 173,3 sur 100 episodes, 34 % de reussite.
     "baseline": {},
+
+    # --- Experiences : UN SEUL parametre change a la fois ----------------
+    # Le baseline utilise deux couches de 64 neurones. LunarLander demande
+    # de coordonner 8 variables continues vers un geste precis : on teste si
+    # la capacite du reseau est le facteur limitant.
+    "net256": {"policy_kwargs": {"net_arch": [256, 256]}},
+
+    # 1e-4 est prudent. Avec seulement 100 000 pas, un pas d'apprentissage
+    # plus grand peut etre necessaire pour converger dans le budget.
+    "lr_haut": {"learning_rate": 6.3e-4},
+
+    # Le reseau cible n'est rafraichi que tous les 10 000 pas par defaut :
+    # l'agent poursuit une cible tres perimee. Le rafraichir plus souvent
+    # devrait accelerer et stabiliser l'apprentissage.
+    "cible_rapide": {"target_update_interval": 250},
+
+    # Un buffer de 1 million sur 100 000 pas ne se remplit jamais : l'agent
+    # rejoue en permanence ses tres mauvais debuts. Un buffer plus petit
+    # oublie les erreurs de jeunesse.
+    "buffer_court": {"buffer_size": 50_000},
+
+    # Des lots plus grands donnent des gradients moins bruites, donc des
+    # mises a jour plus stables -- ce que vise l'etape 2.
+    "lot_128": {"batch_size": 128},
+
+    # Prolonge la phase d'exploration (10 % -> 12 % de l'entrainement).
+    "exploration_longue": {"exploration_fraction": 0.12},
+
+    # --- Combinaison des variantes gagnantes ----------------------------
+    # A n'entrainer qu'apres analyse des experiences individuelles.
+    "optimise": {
+        "policy_kwargs": {"net_arch": [256, 256]},
+        "learning_rate": 6.3e-4,
+        "target_update_interval": 250,
+        "buffer_size": 50_000,
+        "batch_size": 128,
+        "learning_starts": 0,
+        "gradient_steps": -1,
+        "exploration_fraction": 0.12,
+        "exploration_final_eps": 0.1,
+    },
+
+    # --- Comparatif d'algorithme (a lancer avec --algo ppo) --------------
+    # PPO gere aussi bien le discret que le continu. Sert a verifier
+    # empiriquement le choix de DQN plutot qu'a le supposer.
+    "ppo_defaut": {},
 }

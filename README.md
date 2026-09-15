@@ -40,6 +40,38 @@ L'API joue donc les épisodes de bout en bout et le frontend n'est qu'un lecteur
 trajectoires. Cette contrainte est vérifiée automatiquement par un test : aucun fichier
 de `app/` ne peut importer `gymnasium`, `stable_baselines3` ou `torch`.
 
+### Contrat d'API
+
+| Méthode | Route | Rôle |
+|---|---|---|
+| `GET` | `/health` | état du service, nombre d'épisodes en base |
+| `GET` | `/model` | algorithme, hyperparamètres, performance mesurée sur 100 épisodes |
+| `POST` | `/episodes` | joue un épisode (`seed` et `video` optionnels), l'enregistre et renvoie son résumé |
+| `GET` | `/episodes` | liste paginée des parties jouées |
+| `GET` | `/episodes/{id}` | trajectoire complète : état, action et circonstance à chaque pas |
+| `GET` | `/episodes/{id}/video` | le `.mp4` de l'épisode |
+| `GET` | `/metrics` | agrégats : moyenne, écart-type, taux de réussite, décisions par circonstance |
+
+Documentation interactive générée par FastAPI : <http://localhost:8000/docs>
+
+### Les « circonstances »
+
+L'énoncé demande que le tableau de bord montre « les décisions prises par l'IA en fonction
+du type de circonstance ». Chaque pas de temps est donc classé selon quatre axes :
+
+| Axe | Valeurs |
+|---|---|
+| `altitude` | haute / moyenne / basse / au sol |
+| `inclinaison` | penché à gauche / droit / penché à droite |
+| `descente` | rapide / modérée / lente ou montée |
+| `position` | à gauche de la cible / au-dessus / à droite |
+
+La convention d'angle a été **vérifiée expérimentalement** : le propulseur gauche (action 1)
+augmente l'angle et déplace l'appareil vers la gauche, donc un angle positif correspond à une
+inclinaison vers la gauche. Les données confirment que l'agent corrige correctement — penché
+à gauche, il utilise le propulseur droit dans 32 % des cas, contre 3 % lorsqu'il penche à
+droite.
+
 ### Décision : DQN comme algorithme principal
 
 `LunarLander-v3` a un espace d'actions **discret** (4 propulseurs), ce qui désigne DQN.

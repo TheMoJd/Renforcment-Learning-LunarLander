@@ -188,6 +188,8 @@ Chaque configuration est entraînée sur 100 000 pas puis évaluée sur 100 épi
 | `lr_haut` | −7,9 | 164,4 | 17 % | 48 % |
 | `lot_128` | −75,7 | 160,7 | 0 % | 39 % |
 | `net256` | −79,1 | 145,9 | 4 % | 54 % |
+| `gamma_prevoyant` (0,999) | 63,8 | 114,1 | 5 % | 11 % |
+| `gamma_myope` (0,95) | −15,6 | 147,0 | 10 % | 29 % |
 | `cible_rapide` | −89,5 | 25,9 | 0 % | 36 % |
 
 #### Résultat principal : les hyperparamètres interagissent
@@ -204,6 +206,21 @@ Cela met en évidence la limite du protocole « un paramètre à la fois » : il
 que les axes autour du point de départ et ne peut pas atteindre un optimum situé en
 diagonale. Le protocole reste utile pour *isoler* l'effet de chaque variable, mais il
 n'est pas une méthode d'optimisation.
+
+#### L'effet de `gamma`, lisible dans la durée des épisodes
+
+`gamma` pondère les récompenses futures. L'effet se lit directement dans la durée moyenne
+d'un épisode :
+
+| `gamma` | Durée moyenne | Crashes | ≥ 200 | Comportement |
+|---:|---:|---:|---:|---|
+| 0,95 | 471 pas | 29 % | 10 % | **myope** — se précipite vers le sol et s'écrase |
+| 0,99 | 625 pas | 28 % | 34 % | compromis (valeur par défaut) |
+| 0,999 | 798 pas | 11 % | 5 % | **trop prévoyant** — temporise et n'ose plus se poser |
+
+L'agent à `gamma = 0,999` affiche le meilleur taux de crash de toute la campagne (11 %) tout
+en n'atteignant l'objectif que dans 5 % des cas : il reste en vol au lieu de se poser. La
+valeur par défaut de 0,99 s'avère le meilleur compromis entre précipitation et temporisation.
 
 #### Un écart-type faible n'est pas un objectif en soi
 

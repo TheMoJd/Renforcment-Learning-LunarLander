@@ -86,6 +86,16 @@ PRESETS: dict[str, dict] = {
     # Prolonge la phase d'exploration (10 % -> 12 % de l'entrainement).
     "exploration_longue": {"exploration_fraction": 0.12},
 
+    # gamma pondere les recompenses futures : avec 0,99 une recompense
+    # obtenue dans 100 pas vaut encore 37 % de sa valeur. L'enonce cite
+    # nommement ce parametre parmi ceux a faire varier.
+    # Plus myope : l'agent privilegie le gain immediat. Risque de se poser
+    # trop vite sans soigner l'approche.
+    "gamma_myope": {"gamma": 0.95},
+    # Plus prevoyant : il valorise davantage l'atterrissage final, au risque
+    # de tolerer de longues manoeuvres couteuses en carburant.
+    "gamma_prevoyant": {"gamma": 0.999},
+
     # --- Combinaison des variantes gagnantes ----------------------------
     # A n'entrainer qu'apres analyse des experiences individuelles.
     "optimise": {

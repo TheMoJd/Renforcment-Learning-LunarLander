@@ -1,0 +1,11 @@
+{
+  "run_name": "dqn_gamma_prevoyant",
+  "algo": "dqn",
+  "preset": "gamma_prevoyant",
+  "hyperparams": {
+    "gamma": 0.999
+  },
+  "timesteps": 100000,
+  "train_seed": 42,
+  "duration_seconds": 169.8
+}

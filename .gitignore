@@ -15,8 +15,9 @@ __pycache__/
 .pytest_cache/
 
 # --- Artefacts d'entrainement -------------------------------------------
-# Logs TensorBoard : volumineux et regenerables a partir des scripts.
-runs/
+# Les logs TensorBoard sont versionnes (372 Ko au total) : ils constituent
+# la trace des experiences et permettent de rejouer les courbes sans
+# reentrainer. Seuls les checkpoints lourds sont exclus (voir plus bas).
 # On ne versionne pas les checkpoints intermediaires.
 models/*/final.zip
 models/*/evaluations.npz

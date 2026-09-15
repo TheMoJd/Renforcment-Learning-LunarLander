@@ -39,3 +39,6 @@ data/*.db
 Thumbs.db
 .vscode/
 .idea/
+
+# --- Rapports d'inspection navigateur (gstack) ---------------------------
+.gstack/

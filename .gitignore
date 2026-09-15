@@ -30,6 +30,10 @@ models/*/best_model.zip
 !models/ppo_defaut_300k/best_model.zip
 # Base SQLite des parties jouees : etat d'execution, pas du code.
 data/*.db
+# Videos generees a chaque partie jouee depuis l'API ou le GUI : artefacts
+# d'execution. Seule la video livrable (videos/eagle1-atterrissages.mp4)
+# est versionnee.
+videos/episode_*.mp4
 
 # --- Notebook ------------------------------------------------------------
 .ipynb_checkpoints/

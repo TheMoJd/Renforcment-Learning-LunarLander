@@ -53,6 +53,10 @@ def metriques() -> dict:
     return _get("/metrics").json()
 
 
+def experiences() -> dict:
+    return _get("/experiments").json()
+
+
 def episodes(limite: int = 200) -> dict:
     return _get("/episodes", limite=limite).json()
 

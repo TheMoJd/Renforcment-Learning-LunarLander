@@ -37,18 +37,52 @@ def lancer(presets: list[str], algo: str = "dqn", timesteps: int = 100_000) -> N
         )
 
 
+def resultats(episodes: int = EVAL_EPISODES_FINAL) -> list[dict]:
+    """Resultats structures de toutes les experiences evaluees.
+
+    Sert a la fois au tableau texte ci-dessous et a la route /experiments de
+    l'API, que le tableau de bord consomme. Le frontend n'a pas le droit de
+    lire models/ directement : il ne parle que HTTP.
+    """
+    sorties = []
+    for dossier in sorted(MODELS_DIR.iterdir()):
+        if not dossier.is_dir():
+            continue
+        fichier = dossier / f"eval_best_model_{episodes}ep.json"
+        metadonnees = dossier / "metadata.json"
+        if not fichier.exists():
+            continue
+
+        brut = json.loads(fichier.read_text(encoding="utf-8"))
+        stats = describe_distribution(brut["episode_rewards"])
+        meta = json.loads(metadonnees.read_text(encoding="utf-8")) if metadonnees.exists() else {}
+
+        sorties.append(
+            {
+                "run": dossier.name,
+                "algo": meta.get("algo"),
+                "preset": meta.get("preset"),
+                # Preset vide = valeurs par defaut de SB3 : on le dit
+                # explicitement plutot que d'afficher un tiret.
+                "hyperparams": meta.get("hyperparams") or {},
+                "timesteps": meta.get("timesteps"),
+                "duree_entrainement_s": meta.get("duration_seconds"),
+                "objectif_atteint": stats["mean"] >= SUCCESS_THRESHOLD,
+                "recompenses": brut["episode_rewards"],
+                **{c: stats[c] for c in (
+                    "n_episodes", "mean", "std", "sem", "median",
+                    "q1", "q3", "min", "max", "success_rate", "crash_rate",
+                )},
+            }
+        )
+
+    sorties.sort(key=lambda ligne: ligne["mean"], reverse=True)
+    return sorties
+
+
 def tableau(episodes: int = EVAL_EPISODES_FINAL) -> str:
     """Tableau comparatif de toutes les evaluations disponibles."""
-    lignes = []
-    for dossier in sorted(MODELS_DIR.iterdir()):
-        fichier = dossier / f"eval_best_model_{episodes}ep.json"
-        if not dossier.is_dir() or not fichier.exists():
-            continue
-        brut = json.loads(fichier.read_text(encoding="utf-8"))
-        s = describe_distribution(brut["episode_rewards"])
-        lignes.append((s["mean"], dossier.name, s))
-
-    lignes.sort(reverse=True)
+    lignes = [(ligne["mean"], ligne["run"], ligne) for ligne in resultats(episodes)]
     entete = (
         f"{'run':<26} {'moyenne':>9} {'ecart-type':>11} {'erreur-type':>12} "
         f"{'>=200':>7} {'mediane':>9}"

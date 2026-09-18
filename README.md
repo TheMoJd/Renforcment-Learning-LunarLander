@@ -51,6 +51,7 @@ de `app/` ne peut importer `gymnasium`, `stable_baselines3` ou `torch`.
 | `GET` | `/episodes/{id}` | trajectoire complète : état, action et circonstance à chaque pas |
 | `GET` | `/episodes/{id}/video` | le `.mp4` de l'épisode |
 | `GET` | `/metrics` | agrégats : moyenne, écart-type, taux de réussite, décisions par circonstance |
+| `GET` | `/experiments` | comparatif des douze expériences d'entraînement |
 
 Documentation interactive générée par FastAPI : <http://localhost:8000/docs>
 
@@ -293,3 +294,33 @@ python -m eagle1.train --algo dqn --preset optimise --timesteps 300000 --run-nam
 python -m eagle1.evaluate --run dqn_optimise_300k --episodes 100
 python -m eagle1.experiments --tableau
 ```
+
+---
+
+## Interfaces
+
+### GUI — visualiser une partie
+
+`streamlit run app/gui.py` (port 8501). Joue un épisode à la demande et affiche la vidéo
+de l'atterrissage, la répartition des actions par circonstance, et trois graphiques de
+trajectoire : descente, récompense cumulée, actions au cours du temps.
+
+### Tableau de bord — suivre les performances
+
+`streamlit run app/dashboard.py` (port 8502). Trois onglets :
+
+| Onglet | Contenu |
+|---|---|
+| **Parties jouées** | moyenne, écart-type, taux de réussite, durée moyenne ; récompense par partie avec moyenne glissante et seuil des 200 ; distribution ; détail des parties |
+| **Décisions de l'agent** | répartition globale des actions, puis part de chaque action selon les quatre axes de circonstance, tous épisodes confondus |
+| **Expériences d'entraînement** | les douze entraînements comparés : moyennes avec barres d'erreur-type, nuage moyenne/écart-type, boîtes à moustaches, tableau détaillé des hyperparamètres |
+
+Un panneau latéral permet de jouer un lot de parties pour alimenter les statistiques.
+
+Le frontend ne contient **aucune** logique d'apprentissage par renforcement : `app/` ne peut
+importer ni `gymnasium`, ni `stable_baselines3`, ni `torch`, et un test le vérifie. Toutes
+ses données viennent de l'API, y compris le comparatif des expériences, servi par
+`GET /experiments` plutôt que lu dans `models/`.
+
+Mesure sur 44 parties jouées à seeds aléatoires : **246,8 de moyenne, écart-type 40,7,
+91 % de réussite, 347 pas en moyenne** — cohérent avec l'évaluation de référence.

@@ -160,6 +160,25 @@ def video(episode_id: str) -> FileResponse:
     return FileResponse(chemin, media_type="video/mp4", filename=chemin.name)
 
 
+@app.get("/experiments", summary="Comparatif des experiences d'entrainement")
+def experiments() -> dict:
+    """Resultats des douze experiences d'hyperparametres, triees par moyenne.
+
+    Le tableau de bord doit pouvoir montrer cette comparaison, mais il n'a
+    pas le droit de lire models/ directement : cette route lui sert les
+    memes donnees en HTTP.
+    """
+    from eagle1.experiments import resultats
+
+    lignes = resultats()
+    return {
+        "seuil_reussite": SUCCESS_THRESHOLD,
+        "modele_servi": BEST_RUN,
+        "nb_experiences": len(lignes),
+        "experiences": lignes,
+    }
+
+
 @app.get("/metrics", summary="Metriques agregees")
 def metrics() -> dict:
     """Alimente le tableau de bord : moyenne, ecart-type, taux de reussite,
